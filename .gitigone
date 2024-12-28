@@ -1,0 +1,3 @@
+services/postgres/postgres_data
+back/.venv
+front/node_modules
