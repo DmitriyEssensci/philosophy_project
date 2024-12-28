@@ -1,6 +1,8 @@
 # philosophy_project
 Проект по стилизованной библиотеке по философии
 
+![Версия 0.0.1](img/v0.0.1.png)
+
 # Создангие проекта через npx:
 npx create-react-app front
 
