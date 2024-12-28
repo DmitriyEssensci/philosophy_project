@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import SpiderWeb from './SpiderWeb';
 import CreateCenterForm from './CreateCenterForm';
+import CenterDetailsModal from './CenterDetailsModal';
 
 const SpiderData = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCenter, setSelectedCenter] = useState(null);
 
   useEffect(() => {
-    console.log('Загрузка данных с сервера...'); // Отладочный вывод
+    console.log('Загрузка данных с сервера...');
     fetch('http://localhost:9000/data/api/')
       .then((res) => {
         if (!res.ok) {
@@ -17,34 +20,25 @@ const SpiderData = () => {
         return res.json();
       })
       .then((response) => {
-        console.log('Данные получены:', response); // Отладочный вывод
-
-        // Извлекаем массив objects из ответа
+        console.log('Данные получены:', response);
         const rawData = response.objects;
 
         if (Array.isArray(rawData)) {
-          // Фильтруем и обрабатываем данные
           const processedData = rawData
-            .filter((item) => item.person_name !== 'string') // Игнорируем некорректные записи
+            .filter((item) => item.person_name !== 'string')
             .map((item, index, array) => ({
-              id: item.id,
-              person_name: item.person_name,
-              years_life: item.years_life,
-              school_teaching: item.school_teaching,
-              person_teacher: item.person_teacher !== 'string' ? item.person_teacher : null,
-              person_followers: item.person_followers !== 'string' ? item.person_followers : null,
-              // Добавляем координаты для рендеринга
-              x: Math.cos((index / array.length) * 2 * Math.PI) * 300,
-              y: Math.sin((index / array.length) * 2 * Math.PI) * 300,
+              ...item,
+              x: 400 + Math.cos((index / array.length) * 2 * Math.PI) * 300,
+              y: 400 + Math.sin((index / array.length) * 2 * Math.PI) * 300,
             }));
-          console.log('Обработанные данные:', processedData); // Отладочный вывод
+          console.log('Обработанные данные:', processedData);
           setData(processedData);
         } else {
           throw new Error('Данные не являются массивом');
         }
       })
       .catch((err) => {
-        console.error('Ошибка при загрузке данных:', err); // Отладочный вывод
+        console.error('Ошибка при загрузке данных:', err);
         setError(err.message);
       })
       .finally(() => {
@@ -53,7 +47,7 @@ const SpiderData = () => {
   }, []);
 
   const handleCreateCenter = (newCenter) => {
-    console.log('Создание нового центра:', newCenter); // Отладочный вывод
+    console.log('Создание нового центра:', newCenter);
     fetch('http://localhost:9000/data/', {
       method: 'POST',
       headers: {
@@ -61,31 +55,37 @@ const SpiderData = () => {
       },
       body: JSON.stringify(newCenter),
     })
-      .then((res) => {
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((newItem) => {
-        console.log('Новый центр создан:', newItem); // Отладочный вывод
-        // Добавляем координаты для нового центра
+        console.log('Новый центр создан:', newItem);
         const newData = [
           ...data,
           {
             ...newItem,
-            x: Math.cos((data.length / (data.length + 1)) * 2 * Math.PI) * 300,
-            y: Math.sin((data.length / (data.length + 1)) * 2 * Math.PI) * 300,
+            x: 400 + Math.cos((data.length / (data.length + 1)) * 2 * Math.PI) * 300,
+            y: 400 + Math.sin((data.length / (data.length + 1)) * 2 * Math.PI) * 300,
           },
         ];
         setData(newData);
       })
       .catch((err) => {
-        console.error('Ошибка при создании центра:', err); // Отладочный вывод
+        console.error('Ошибка при создании центра:', err);
         setError(err.message);
       });
   };
 
   const handleCenterClick = (center) => {
-    console.log('Выбран центр:', center); // Отладочный вывод
+    console.log('Выбран центр:', center);
     alert(`Выбран центр: ${center.person_name}`);
+  };
+
+  const handleCenterDoubleClick = (center) => {
+    console.log('Двойной клик на центр:', center); // Отладочный вывод
+    setSelectedCenter(center);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedCenter(null);
   };
 
   if (loading) {
@@ -97,13 +97,31 @@ const SpiderData = () => {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-      <div style={{ flex: 1, position: 'relative' }}>
-        <SpiderWeb data={data} onCenterClick={handleCenterClick} />
+    <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
+      {/* Основное поле с паутиной */}
+      <div style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
+        <TransformWrapper
+          doubleClick={{ disabled: true }} // Отключаем обработку двойного клика
+        >
+          <TransformComponent>
+            <SpiderWeb
+              data={data}
+              onCenterClick={handleCenterClick}
+              onCenterDoubleClick={handleCenterDoubleClick}
+            />
+          </TransformComponent>
+        </TransformWrapper>
       </div>
-      <div style={{ width: '300px', padding: '20px' }}>
+
+      {/* Боковое окно с формой */}
+      <div style={{ width: '7cm', padding: '20px', borderLeft: '1px solid #ccc' }}>
         <CreateCenterForm onSubmit={handleCreateCenter} />
       </div>
+
+      {/* Модальное окно */}
+      {selectedCenter && (
+        <CenterDetailsModal center={selectedCenter} onClose={handleCloseModal} />
+      )}
     </div>
   );
 };
