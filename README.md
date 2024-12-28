@@ -24,6 +24,5 @@ pip3 install -r requirements.txt
     ИЛИ
 - uvicorn main:app --port 9000 --host localhost --reload ## Предпочтительней т.к. есть авторелоад
 
-
 # Запуск front:
 - npm start
