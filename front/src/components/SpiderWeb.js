@@ -7,70 +7,89 @@ const SpiderWeb = ({ data, onCenterClick, onCenterDoubleClick }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    console.log('Данные для отрисовки:', data); // Отладочный вывод
     if (!data.length) return;
 
-    // Создаем граф
-    const graph = new Graph();
+    // console.log('Данные для отрисовки:', data); // Отладочный вывод
+
+    const graph = new Graph({ multi: true }); // Создаём мультиграф
 
     // Добавляем узлы
     data.forEach((item) => {
-      graph.addNode(item.id.toString(), { // Используем item.id как идентификатор узла
+      graph.addNode(item.id.toString(), {
         label: item.person_name,
-        x: item.x || Math.random() * 500,
-        y: item.y || Math.random() * 500,
-        size: 10,
+        x: item.x,
+        y: item.y,
+        size: 5,
         color: getColorBySchool(item.school_teaching),
       });
     });
 
-    // Добавляем ребра
-    const schoolMap = {};
-    data.forEach((item) => {
-      if (!schoolMap[item.school_teaching]) {
-        schoolMap[item.school_teaching] = [];
-      }
-      schoolMap[item.school_teaching].push(item.id); // Используем id
-    });
+    // Функция для разбиения строки на массив имён
+    const splitNames = (names) => {
+      if (!names) return [];
+      return names.split(',').map((name) => name.trim().toLowerCase());
+    };
 
-    Object.values(schoolMap).forEach((group) => {
-      if (group.length > 1) {
-        for (let i = 0; i < group.length - 1; i++) {
-          for (let j = i + 1; j < group.length; j++) {
-            graph.addEdge(group[i], group[j], {
-              color: '#ccc',
-            });
+    
+
+    // Добавляем рёбра на основе influenced_by и influenced
+    data.forEach((sourceItem) => {
+      const sourceId = sourceItem.id.toString();
+      const sourceName = sourceItem.person_name.trim().toLowerCase();
+
+      data.forEach((targetItem) => {
+        const targetId = targetItem.id.toString();
+
+        // Обрабатываем influenced_by (фиолетовые рёбра)
+        if (targetItem.influenced_by) {
+          const influencedByNames = splitNames(targetItem.influenced_by);
+          // console.log(`Проверка influenced_by для ${targetItem.person_name}:`, influencedByNames);
+
+          if (influencedByNames.includes(sourceName)) {
+            // console.log(`Добавлено фиолетовое ребро от ${sourceName} к ${targetItem.person_name}`);
+            graph.addEdge(sourceId, targetId, { color: '#800080' });
           }
         }
-      }
+
+        // Обрабатываем influenced (зелёные рёбра)
+        if (targetItem.influenced) {
+          const influencedNames = splitNames(targetItem.influenced);
+          // console.log(`Проверка influenced для ${targetItem.person_name}:`, influencedNames);
+
+          if (influencedNames.includes(sourceName)) {
+            // console.log(`Добавлено зелёное ребро от ${targetItem.person_name} к ${sourceName}`);
+            graph.addEdge(targetId, sourceId, { color: '#008000' });
+          }
+        }
+      });
     });
 
+    // console.log('Узлы графа:', graph.nodes()); // Отладочный вывод
+    // console.log('Рёбра графа:', graph.edges()); // Отладочный вывод
+
     // Инициализируем Sigma
-    const sigmaInstance = new Sigma(graph, containerRef.current);
+    const sigmaInstance = new Sigma(graph, containerRef.current, {
+      renderEdgeLabels: false,
+      enableEdgeHoverEvents: false,
+      enableEdgeClickEvents: false,
+    });
 
-    // Применяем ForceAtlas2 layout
+    // console.log('Sigma инициализирован:', sigmaInstance); // Отладочный вывод
+
+    // Применяем ForceAtlas2 с меньшим количеством итераций
     const settings = forceAtlas2.inferSettings(graph);
-    forceAtlas2.assign(graph, { settings, iterations: 50 });
+    forceAtlas2.assign(graph, { settings, iterations: 20 });
 
-    // Обработка клика на узел
+    // Обработка событий
     sigmaInstance.on('clickNode', (event) => {
-      const nodeId = event.node;
-      const node = data.find((item) => item.id === nodeId); // Ищем по id
+      const node = data.find((item) => item.id.toString() === event.node);
       if (node) onCenterClick(node);
     });
 
-    // Обработка двойного клика на узел
     sigmaInstance.on('doubleClickNode', (event) => {
-      try {
-        event.preventSigmaDefault(); // Отключаем стандартное поведение зума
-        const nodeId = event.node;
-        console.log('Node ID:', nodeId); // Отладочный вывод
-        const node = data.find((item) => item.id.toString() === nodeId); // Ищем по id
-        console.log('Двойной клик на узел:', node); // Отладочный вывод
-        if (node) onCenterDoubleClick(node);
-      } catch (error) {
-        console.error('Ошибка при обработке двойного клика:', error);
-      }
+      event.preventSigmaDefault();
+      const node = data.find((item) => item.id.toString() === event.node);
+      if (node) onCenterDoubleClick(node);
     });
 
     return () => {
@@ -84,7 +103,7 @@ const SpiderWeb = ({ data, onCenterClick, onCenterDoubleClick }) => {
     return colors[index];
   };
 
-  return <div ref={containerRef} style={{ width: '1600px', height: '900px', border: '10px solid #ccc' }} />;
+  return <div ref={containerRef} style={{ width: '2000px', height: '1200px', border: '1px solid #ccc' }} />;
 };
 
-export default SpiderWeb;
+export default React.memo(SpiderWeb);

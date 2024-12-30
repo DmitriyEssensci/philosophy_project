@@ -9,16 +9,21 @@ class DataModel(Base):
 
     person_name = Column(String, nullable=False)
 
-    period_life = Column(String, nullable=False)
-    years_life = Column(String, nullable=False)
-    school_teaching = Column(String, nullable=False)
+    period_life = Column(String, nullable=True)
+    birth_date = Column(String, nullable=True)
+    death_date = Column(String, nullable=True)
 
-    person_teacher = Column(String, nullable=False)
-    person_followers = Column(String, nullable=False)
-    person_works = Column(String, nullable=False)
+    school_teaching = Column(String, nullable=True)
+
+    influenced_by = Column(String, nullable=True)
+    influenced = Column(String, nullable=True)
+    person_works = Column(String, nullable=True)
     
-    short_description = Column(String, nullable=False)
-    full_description = Column(String, nullable=False)
+    short_description = Column(String, nullable=True)
+    full_description = Column(String, nullable=True)
 
-    create_data = Column(DateTime, default=datetime.utcnow, nullable=False)  # Автоматически задаётся при создании
-    update_data = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)  # Автоматически обновляется
+    wiki_url = Column(String, nullable=False)
+    wiki_id = Column(String, nullable=False)
+
+    create_data = Column(DateTime, default=datetime.utcnow, nullable=False)
+    update_data = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

@@ -3,14 +3,17 @@ import React, { useState } from 'react';
 const CreateCenterForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
     person_name: '',
-    years_life: '',
+    birth_date: '',
+    death_date: '',
     school_teaching: '',
     period_life: '',
-    person_teacher: '',
-    person_followers: '',
+    influenced: '',
+    influenced_by: '',
     person_works: '',
     short_description: '',
     full_description: '',
+    wiki_url: '',
+    wiki_id: '',
   });
 
   const handleChange = (e) => {
@@ -37,15 +40,26 @@ const CreateCenterForm = ({ onSubmit }) => {
         />
       </div>
       <div>
-        <label>Годы жизни:</label>
+        <label>Дата рождения:</label>
         <input
           type="text"
-          name="years_life"
-          value={formData.years_life}
+          name="birth_date"
+          value={formData.birth_date}
           onChange={handleChange}
           required
         />
       </div>
+      <div>
+        <label>Дата рождения:</label>
+        <input
+          type="text"
+          name="death_date"
+          value={formData.death_date}
+          onChange={handleChange}
+          required
+        />
+      </div>
+
       <div>
         <label>Школа обучения:</label>
         <input
@@ -70,11 +84,30 @@ const CreateCenterForm = ({ onSubmit }) => {
         <label>Учитель:</label>
         <input
           type="text"
-          name="person_teacher"
-          value={formData.person_teacher}
+          name="influenced"
+          value={formData.influenced}
           onChange={handleChange}
         />
       </div>
+      <div>
+        <label>Wiki страница:</label>
+        <input
+          type="text"
+          name="wiki_url"
+          value={formData.wiki_url}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>Wiki id публикации:</label>
+        <input
+          type="text"
+          name="wiki_id"
+          value={formData.wiki_id}
+          onChange={handleChange}
+        />
+      </div>
+      <></>
       <button type="submit">Создать</button>
     </form>
   );

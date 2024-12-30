@@ -5,6 +5,7 @@ back/.venv
 back/__pycache__
 back/default/__pycache__
 back/data_contoller/__pycache__
+back/postgres_dump/*
 
 front/node_modules
 
