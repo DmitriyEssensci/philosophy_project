@@ -1,5 +1,4 @@
-// CenterDetailsModal.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 const ModalPortal = ({ children }) => {
@@ -8,31 +7,60 @@ const ModalPortal = ({ children }) => {
 };
 
 const CenterDetailsModal = ({ center, onClose }) => {
+  useEffect(() => {
+    // Обработчик для закрытия модального окна по нажатию на Escape
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    // Добавляем обработчик события keydown
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Убираем обработчик при размонтировании компонента
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
+  // Обработчик для закрытия модального окна по клику вне его области
+  const handleBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
   if (!center) return null;
 
   return (
     <ModalPortal>
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-      }}>
-        <div style={{
-          backgroundColor: '#fff',
-          padding: '20px',
-          borderRadius: '5px',
-          width: '300px',
-          maxHeight: '80vh',
-          overflowY: 'auto',
-          position: 'relative', // Для позиционирования крестика
-        }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}
+        onClick={handleBackdropClick} // Закрытие по клику вне модального окна
+      >
+        <div
+          style={{
+            backgroundColor: '#fff',
+            padding: '20px',
+            borderRadius: '5px',
+            width: '300px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            position: 'relative', // Для позиционирования крестика
+          }}
+        >
           {/* Крестик для закрытия */}
           <button
             onClick={onClose}

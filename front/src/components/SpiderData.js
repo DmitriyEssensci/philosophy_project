@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import SpiderWeb from './SpiderWeb';
-import CreateCenterForm from './CreateCenterForm';
 import CenterDetailsModal from './CenterDetailsModal';
+import TransparentText from './TransparentText';
+import PhilosophersList from './PhilosophersList';
 
 const SpiderData = () => {
   const [data, setData] = useState([]);
@@ -17,7 +18,7 @@ const SpiderData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:9000/data/api/philosophers/minimal/');
+        const response = await fetch('http://172.24.32.172:9000/data/api/philosophers/minimal/');
         if (!response.ok) {
           throw new Error('Ошибка при загрузке данных');
         }
@@ -44,7 +45,7 @@ const SpiderData = () => {
 
   const handleCenterDoubleClick = async (center) => {
     try {
-      const response = await fetch(`http://localhost:9000/data/api/philosophers/${center.id}/`);
+      const response = await fetch(`http://172.24.32.172:9000/data/api/philosophers/${center.id}/`);
       if (!response.ok) {
         throw new Error('Ошибка при загрузке данных');
       }
@@ -68,8 +69,15 @@ const SpiderData = () => {
     return <div>Ошибка: {error}</div>;
   }
 
+   // Подсчёт количества центров и связей
+   const totalCenters = data.length;
+   const totalConnections = data.reduce((acc, item) => acc + (item.influenced_by ? item.influenced_by.split(',').length : 0) + (item.influenced ? item.influenced.split(',').length : 0), 0);
+
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
+      {/* Текст слева сверху */}
+      <TransparentText totalCenters={totalCenters} totalConnections={totalConnections} />
+
       {/* Основное поле с паутиной */}
       <div style={{ flex: 1, position: 'relative', width: '100%', height: '100%' }}>
         <TransformWrapper key="transform-wrapper" doubleClick={{ disabled: true }}>
@@ -83,10 +91,8 @@ const SpiderData = () => {
         </TransformWrapper>
       </div>
 
-      {/* Боковое окно с формой */}
-      <div style={{ width: '7cm', padding: '20px', borderLeft: '1px solid #ccc' }}>
-        <CreateCenterForm onSubmit={() => {}} />
-      </div>
+      {/* Вкладка справа снизу */}
+      <PhilosophersList data={data} />
 
       {/* Модальное окно с деталями */}
       {selectedCenter && (

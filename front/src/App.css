@@ -52,9 +52,3 @@ svg {
 .label {
   pointer-events: none;
 }
-
-.sigma-container {
-  width: 800px;
-  height: 800px;
-  position: relative;
-}
