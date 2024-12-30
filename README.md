@@ -23,7 +23,7 @@ pip3 install -r requirements.txt
 # Запуск back:
 - fastapi run main.py --port=9000 --host=localhost
     ИЛИ
-- uvicorn main:app --port 9000 --host localhost --reload ## Предпочтительней т.к. есть авторелоад
+- uvicorn main:app --port 9000 --host 0.0.0.0 --reload ## Предпочтительней т.к. есть авторелоад
 
 # Запуск front:
-- npm start
+- HOST=0.0.0.0 PORT=3001 npm start
